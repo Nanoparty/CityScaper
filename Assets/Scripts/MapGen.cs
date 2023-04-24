@@ -118,6 +118,8 @@ public class MapGen : MonoBehaviour
             ResolveNextTile();
         }
 
+
+
     }
 
     private void ResolveNextTile()
@@ -142,6 +144,8 @@ public class MapGen : MonoBehaviour
                 }
             }
         }
+
+        if (totalStates == int.MaxValue) { return; }
 
         GameObject currentTile = _mapList[nextRow, nextCol][Random.Range(0, _mapList[nextRow, nextCol].Count)];
         _map[nextRow, nextCol] = currentTile;
