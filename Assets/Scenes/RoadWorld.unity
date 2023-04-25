@@ -194,8 +194,12 @@ MonoBehaviour:
   - {fileID: 1225490557165898192, guid: 77e0452c37d7a5a4c855cd1b0e774b14, type: 3}
   - {fileID: 1225490557165898192, guid: e85877b87fa919e4e882f69ee2956e79, type: 3}
   - {fileID: 8817838049850610387, guid: 362ee4730afb6e243b1ad7755f965603, type: 3}
-  - {fileID: 6440813180327851658, guid: 0a613a49665eae9439f5bcfd89aadc23, type: 3}
-  - {fileID: 6440813180327851658, guid: ddd41eaa91d17dc41ae78942b618bd9c, type: 3}
+  - {fileID: 3185028764538250326, guid: be0939f2ba2e1d14c9eb7c57411e3a3e, type: 3}
+  - {fileID: 3185028764538250326, guid: e5e0f45fc05ea684f90d596c5fc5f715, type: 3}
+  - {fileID: 85505355910056334, guid: 2120727f7856aac49b992ff1bd560a69, type: 3}
+  - {fileID: 85505355910056334, guid: 947d1997c1ecbb54e814c91809c4ff74, type: 3}
+  - {fileID: 85505355910056334, guid: fe9de4957662eea43b1ec2c183d09457, type: 3}
+  - {fileID: 85505355910056334, guid: 24f5d565cbeab3847aad540170f43c18, type: 3}
   UseRandomSeed: 1
   Seed: 0
 --- !u!1 &679268950
@@ -209,6 +213,7 @@ GameObject:
   - component: {fileID: 679268953}
   - component: {fileID: 679268952}
   - component: {fileID: 679268951}
+  - component: {fileID: 679268954}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -282,6 +287,24 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 44.544, y: 47.246, z: 2.472}
+--- !u!114 &679268954
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 679268950}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 457e7ca538a2dda42a535a000bc6d44e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mainSpeed: 100
+  shiftAdd: 250
+  maxShift: 1000
+  camSens: 0.25
+  rotateOnlyIfMousedown: 1
+  movementStaysFlat: 1
 --- !u!1 &1539613970
 GameObject:
   m_ObjectHideFlags: 0
