@@ -20,6 +20,7 @@ public class FlyCamera : MonoBehaviour
     public float camSens = 0.25f; //How sensitive it with mouse
     public bool rotateOnlyIfMousedown = true;
     public bool movementStaysFlat = true;
+    public bool slowMode = false;
 
     private Vector3 lastMouse = new Vector3(255, 255, 255); //kind of in the middle of the screen, rather than at the top (play)
     private float totalRun = 1.0f;
@@ -65,6 +66,11 @@ public class FlyCamera : MonoBehaviour
             p.y = Mathf.Clamp(p.y, -maxShift, maxShift);
             p.z = Mathf.Clamp(p.z, -maxShift, maxShift);
         }
+        else if (Input.GetKey(KeyCode.LeftControl))
+        {
+            totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
+            p = p * mainSpeed / 4;
+        }
         else
         {
             totalRun = Mathf.Clamp(totalRun * 0.5f, 1f, 1000f);
@@ -106,6 +112,14 @@ public class FlyCamera : MonoBehaviour
         if (Input.GetKey(KeyCode.D))
         {
             p_Velocity += new Vector3(1, 0, 0);
+        }
+        if (Input.GetKey(KeyCode.E))
+        {
+            p_Velocity += new Vector3(0, 1, 0);
+        }
+        if (Input.GetKey(KeyCode.Q))
+        {
+            p_Velocity += new Vector3(0, -1, 0);
         }
         return p_Velocity;
     }

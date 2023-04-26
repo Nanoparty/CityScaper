@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Tilemaps;
+using UnityEngine.UI;
 
 public class MapGen : MonoBehaviour
 {
@@ -11,9 +13,15 @@ public class MapGen : MonoBehaviour
     [SerializeField] int BlockSize;
 
     [SerializeField] List<GameObject> InputTiles;
+    [SerializeField] List<GameObject> SecondPassTiles;
+    [SerializeField] GameObject NullTile;
 
     [SerializeField] bool UseRandomSeed = true;
     [SerializeField] int Seed;
+
+
+    public TMP_InputField RowField;
+    public TMP_InputField ColField;
 
     private List<GameObject> _allTiles;
 
@@ -22,7 +30,7 @@ public class MapGen : MonoBehaviour
     private List<GameObject> _objects;
     private int _totalResolved;
 
-    private void Start()
+    private void Awake()
     {
         if (UseRandomSeed)
         {
@@ -31,18 +39,37 @@ public class MapGen : MonoBehaviour
         }
 
         _allTiles = new List<GameObject>();
-
-        _mapList = new List<GameObject>[Rows, Cols];
-        _map = new GameObject[Rows,Cols];
         _objects = new List<GameObject>();
 
-        for(int r = 0; r < Rows; r++)
+        InitializeArrays();
+
+        RowField.onValueChanged.AddListener(delegate { SetRows(); });
+        ColField.onValueChanged.AddListener(delegate { SetCols(); });
+
+        RowField.text = Rows.ToString();
+        ColField.text = Cols.ToString();
+    }
+
+    private void InitializeArrays()
+    {
+        _mapList = new List<GameObject>[Rows, Cols];
+        _map = new GameObject[Rows, Cols];
+
+        for (int r = 0; r < Rows; r++)
         {
-            for(int c = 0; c < Cols; c++)
+            for (int c = 0; c < Cols; c++)
             {
                 _mapList[r, c] = new List<GameObject>();
             }
         }
+    }
+
+    private void Start()
+    {
+        
+
+        GenerateMap();
+        DrawMap();
     }
 
     private void Update()
@@ -77,9 +104,9 @@ public class MapGen : MonoBehaviour
         }
         _objects.Clear();
 
-        for (int i = 0; i < Rows; i++)
+        for (int i = 0; i < _mapList.GetLength(0); i++)
         {
-            for (int j = 0; j < Cols; j++)
+            for (int j = 0; j < _mapList.GetLength(1); j++)
             {
                 _mapList[i, j].Clear();
                 _map[i, j] = null;
@@ -87,6 +114,11 @@ public class MapGen : MonoBehaviour
         }
 
         _totalResolved= 0;
+
+        if (_map.GetLength(0) != Rows || _map.GetLength(1) != Cols)
+        {
+            InitializeArrays();
+        }
     }
 
     private void GenerateMap()
@@ -118,7 +150,73 @@ public class MapGen : MonoBehaviour
             ResolveNextTile();
         }
 
+        //Spot fill
+        for(int r = 0; r < Rows; r++)
+        {
+            for(int c = 0; c < Cols; c++)
+            {
+                if (_map[r,c] == null)
+                {
+                    List<GameObject> availableTiles = new List<GameObject>();
+                    List<GameObject> validTiles = new List<GameObject>();
 
+                    availableTiles.AddRange(SecondPassTiles);
+
+                    foreach (GameObject tile in availableTiles)
+                    {
+                        Tile.Type topType = Tile.Type.Void;
+                        Tile.Type bottomType = Tile.Type.Void;
+                        Tile.Type leftType = Tile.Type.Void;
+                        Tile.Type rightType = Tile.Type.Void;
+
+                        //Check Below
+                        if (r > 0 && _map[r - 1, c] != null)
+                        {
+                            bottomType = _map[r - 1,c].GetComponent<Tile>().ZPositiveConnection;
+                        }
+
+                        //Check Above
+                        if (r < Rows - 1 && _map[r + 1, c] != null)
+                        {
+                            topType = _map[r + 1, c].GetComponent<Tile>().ZNegativeConnection;
+                        }
+
+                        //Check Left
+                        if (c > 0 && _map[r, c - 1] != null)
+                        {
+                            leftType = _map[r, c - 1].GetComponent<Tile>().XPositiveConnection;
+                        }
+
+                        //Check Right
+                        if (c < Cols - 1 && _map[r, c + 1] != null)
+                        {
+                            rightType = _map[r, c + 1].GetComponent<Tile>().XNegativeConnection;
+                        }
+
+                        if ((bottomType == Tile.Type.Void || bottomType == tile.GetComponent<Tile>().ZNegativeConnection)
+                            && (topType == Tile.Type.Void || topType == tile.GetComponent<Tile>().ZPositiveConnection)
+                            && (leftType == Tile.Type.Void || leftType == tile.GetComponent<Tile>().XNegativeConnection)
+                            && (rightType == Tile.Type.Void || rightType == tile.GetComponent<Tile>().XPositiveConnection))
+                        {
+                            validTiles.Add(tile);
+                        }
+                        
+                    }
+
+                    if (validTiles.Count > 0)
+                    {
+                        GameObject selectedTile = validTiles[Random.Range(0, validTiles.Count)];
+                        _map[r, c] = selectedTile;
+                    }
+                    else
+                    {
+                        _map[r, c] = NullTile;
+                    }
+
+                    
+                }
+            }
+        }
 
     }
 
@@ -240,5 +338,21 @@ public class MapGen : MonoBehaviour
                 _objects.Add(o);
             }
         }
+    }
+
+
+    // UI Functions
+
+    public void SetRows()
+    {
+        if (int.Parse(RowField.text) > 200) RowField.text = "200";
+        Rows = int.Parse(RowField.text);
+        Debug.Log("Rows set to " + Rows);
+    }
+    public void SetCols()
+    {
+        if (int.Parse(ColField.text) > 200) ColField.text = "200";
+        Cols = int.Parse(ColField.text);
+        Debug.Log("Cols set to " + Cols);
     }
 }

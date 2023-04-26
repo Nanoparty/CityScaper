@@ -8,7 +8,8 @@ public class Tile : MonoBehaviour
     {
         Grass,
         Road,
-        Water
+        Water,
+        Void
     }
 
     [SerializeField] public GameObject Model;
