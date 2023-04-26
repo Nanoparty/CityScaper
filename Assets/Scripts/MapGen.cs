@@ -16,6 +16,26 @@ public class MapGen : MonoBehaviour
     [SerializeField] List<GameObject> SecondPassTiles;
     [SerializeField] GameObject NullTile;
 
+    [SerializeField] List<GameObject> RoadTiles;
+    [SerializeField] List<GameObject> WaterTiles;
+    [SerializeField] List<GameObject> DirtTiles;
+    [SerializeField] List<GameObject> ResidentialTiles;
+    [SerializeField] List<GameObject> CommercialTiles;
+
+    [SerializeField] List<GameObject> RoadAndWaterTiles;
+
+    [SerializeField] bool Roads;
+    [SerializeField] bool Water;
+    [SerializeField] bool Dirt;
+    [SerializeField] bool Residential;
+    [SerializeField] bool Commercial;
+
+    [SerializeField] int RoadWeight;
+    [SerializeField] int ResidentialWeight;
+    [SerializeField] int WaterWeight;
+    [SerializeField] int CommericalWeight;
+    [SerializeField] int DirtWeight;
+
     [SerializeField] bool UseRandomSeed = true;
     [SerializeField] int Seed;
 
@@ -131,7 +151,31 @@ public class MapGen : MonoBehaviour
         {
             for (int c = 0; c < Cols; c++)
             {
-                _mapList[r, c].AddRange(InputTiles);
+                if (Roads)
+                {
+                    _mapList[r, c].AddRange(RoadTiles);
+                }
+                if (Water)
+                {
+                    _mapList[r, c].AddRange(WaterTiles);
+                }
+                if (Dirt)
+                {
+                    _mapList[r, c].AddRange(DirtTiles);
+                }
+                if (Residential)
+                {
+                    _mapList[r, c].AddRange(ResidentialTiles);
+                }
+                if (Commercial)
+                {
+                    _mapList[r, c].AddRange(CommercialTiles);
+                }
+
+                if (Water && Roads)
+                {
+                    _mapList[r, c].AddRange(RoadAndWaterTiles);
+                }
             }
         }
 

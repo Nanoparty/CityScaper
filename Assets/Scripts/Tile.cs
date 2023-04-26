@@ -9,7 +9,8 @@ public class Tile : MonoBehaviour
         Grass,
         Road,
         Water,
-        Void
+        Void,
+        Dirt
     }
 
     [SerializeField] public GameObject Model;
