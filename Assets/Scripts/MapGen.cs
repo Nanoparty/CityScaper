@@ -21,6 +21,7 @@ public class MapGen : MonoBehaviour
     [SerializeField] List<GameObject> DirtTiles;
     [SerializeField] List<GameObject> ResidentialTiles;
     [SerializeField] List<GameObject> CommercialTiles;
+    [SerializeField] List<GameObject> GrassTiles;
 
     [SerializeField] List<GameObject> RoadAndWaterTiles;
 
@@ -29,19 +30,40 @@ public class MapGen : MonoBehaviour
     [SerializeField] bool Dirt;
     [SerializeField] bool Residential;
     [SerializeField] bool Commercial;
+    [SerializeField] bool Grass;
 
-    [SerializeField] int RoadWeight;
-    [SerializeField] int ResidentialWeight;
-    [SerializeField] int WaterWeight;
-    [SerializeField] int CommericalWeight;
-    [SerializeField] int DirtWeight;
+    [SerializeField] int RoadWeight = 1;
+    [SerializeField] int ResidentialWeight = 1;
+    [SerializeField] int WaterWeight = 1;
+    [SerializeField] int CommericalWeight = 1;
+    [SerializeField] int DirtWeight = 1;
+    [SerializeField] int GrassWeight = 1;
 
     [SerializeField] bool UseRandomSeed = true;
     [SerializeField] int Seed;
 
+    // UI Fields
 
     public TMP_InputField RowField;
     public TMP_InputField ColField;
+
+    public Slider RoadSlider;
+    public TMP_Text RoadWeightText;
+
+    public Slider DirtSlider;
+    public TMP_Text DirtWeightText;
+
+    public Slider WaterSlider;
+    public TMP_Text WaterWeightText;
+
+    public Slider ResidentialSlider;
+    public TMP_Text ResidentialWeightText;
+
+    public Slider CommercialSlider;
+    public TMP_Text CommercialWeightText;
+
+    public Slider GrassSlider;
+    public TMP_Text GrassWeightText;
 
     private List<GameObject> _allTiles;
 
@@ -68,6 +90,13 @@ public class MapGen : MonoBehaviour
 
         RowField.text = Rows.ToString();
         ColField.text = Cols.ToString();
+
+        RoadSlider.onValueChanged.AddListener(delegate { SetWeight(RoadSlider, RoadWeightText, ref RoadWeight); }); 
+        WaterSlider.onValueChanged.AddListener(delegate { SetWeight(WaterSlider, WaterWeightText, ref WaterWeight); });
+        DirtSlider.onValueChanged.AddListener(delegate { SetWeight(DirtSlider, DirtWeightText, ref DirtWeight); });
+        ResidentialSlider.onValueChanged.AddListener(delegate { SetWeight(ResidentialSlider, ResidentialWeightText, ref ResidentialWeight); });
+        CommercialSlider.onValueChanged.AddListener(delegate { SetWeight(CommercialSlider, CommercialWeightText, ref CommericalWeight); });
+        GrassSlider.onValueChanged.AddListener(delegate { SetWeight(GrassSlider, GrassWeightText, ref GrassWeight); });
     }
 
     private void InitializeArrays()
@@ -151,30 +180,55 @@ public class MapGen : MonoBehaviour
         {
             for (int c = 0; c < Cols; c++)
             {
+                if (Grass)
+                {
+                    for (int i = 0; i < GrassWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(GrassTiles);
+                    }
+                }
                 if (Roads)
                 {
-                    _mapList[r, c].AddRange(RoadTiles);
+                    for (int i = 0; i < RoadWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(RoadTiles);
+                    }
                 }
                 if (Water)
                 {
-                    _mapList[r, c].AddRange(WaterTiles);
+                    for (int i = 0; i < WaterWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(WaterTiles);
+                    }
                 }
                 if (Dirt)
                 {
-                    _mapList[r, c].AddRange(DirtTiles);
+                    for (int i = 0; i < DirtWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(DirtTiles);
+                    }
                 }
                 if (Residential)
                 {
-                    _mapList[r, c].AddRange(ResidentialTiles);
+                    for(int i = 0; i < ResidentialWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(ResidentialTiles);
+                    }
                 }
                 if (Commercial)
                 {
-                    _mapList[r, c].AddRange(CommercialTiles);
+                    for (int i = 0; i < CommericalWeight; i++)
+                    {
+                        _mapList[r, c].AddRange(CommercialTiles);
+                    }
                 }
 
                 if (Water && Roads)
                 {
-                    _mapList[r, c].AddRange(RoadAndWaterTiles);
+                    for (int i = 0; i < (RoadWeight + WaterWeight) / 2; i++)
+                    {
+                        _mapList[r, c].AddRange(RoadAndWaterTiles);
+                    }
                 }
             }
         }
@@ -398,5 +452,11 @@ public class MapGen : MonoBehaviour
         if (int.Parse(ColField.text) > 200) ColField.text = "200";
         Cols = int.Parse(ColField.text);
         Debug.Log("Cols set to " + Cols);
+    }
+
+    public void SetWeight(Slider inputSlider, TMP_Text weightText, ref int weight)
+    {
+        weightText.text = inputSlider.value.ToString();
+        weight = (int)inputSlider.value;
     }
 }
