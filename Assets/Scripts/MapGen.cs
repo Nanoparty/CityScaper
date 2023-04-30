@@ -222,6 +222,14 @@ public class MapGen : MonoBehaviour
         {
             InitializeArrays();
         }
+
+        GameObject Decorations = GameObject.FindGameObjectWithTag("Decorations");
+        foreach (Transform t in Decorations.transform)
+        {
+            Destroy(t.gameObject);
+        }
+
+        _tileOrder.Clear();
     }
 
     private void GenerateMap()
@@ -509,26 +517,14 @@ public class MapGen : MonoBehaviour
 
     public IEnumerator SpawnTiles()
     {
-       
-        //for (int r = 0; r < Rows; r++)
-        //{
-        //    for (int c = 0; c < Cols; c++)
-        //    {
-        //        if (_map[r, c] == null) continue;
-          
-        //        Debug.Log("Instantiate Tile");
-        //        GameObject o = Instantiate(_map[r, c], new Vector3(c * BlockSize, 0, r * BlockSize), Quaternion.identity);
-        //        _objects.Add(o);
-        //        yield return new WaitForSeconds(TileDelay);
-        //    }
-        //}
-
+        Debug.Log("SPawn Tiles Running");
+        Debug.Log("NUmer of tiles : " + _tileOrder.Count);
         foreach ((int, int) point in _tileOrder)
         {
             int r = point.Item1;
             int c = point.Item2;
 
-            if (r >= _map.GetLength(0) || c >= _map.GetLength(1)) yield break;
+            if (r >= _map.GetLength(0) || c >= _map.GetLength(1)) continue;
 
             if (_map[r, c] == null) continue;
 
