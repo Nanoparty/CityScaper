@@ -8,9 +8,14 @@ using UnityEngine.UI;
 
 public class MapGen : MonoBehaviour
 {
+    [SerializeField] bool HideUI;
+
     [SerializeField] int Rows;
     [SerializeField] int Cols;
     [SerializeField] int BlockSize;
+
+    [SerializeField] bool Animate = true;
+    [SerializeField] float TileDelay = 0.005f;
 
     [SerializeField] List<GameObject> InputTiles;
     [SerializeField] List<GameObject> SecondPassTiles;
@@ -43,6 +48,7 @@ public class MapGen : MonoBehaviour
     [SerializeField] int Seed;
 
     // UI Fields
+    public GameObject UI;
 
     public TMP_InputField RowField;
     public TMP_InputField ColField;
@@ -65,6 +71,11 @@ public class MapGen : MonoBehaviour
     public Slider GrassSlider;
     public TMP_Text GrassWeightText;
 
+    public GameObject GeneratingWorld;
+
+    public Toggle Animation_Toggle;
+    public TMP_InputField Animation_Delay_Input;
+
     private List<GameObject> _allTiles;
 
     [SerializeField] public List<GameObject>[,] _mapList;
@@ -72,8 +83,14 @@ public class MapGen : MonoBehaviour
     private List<GameObject> _objects;
     private int _totalResolved;
 
+    private List<(int, int)> _tileOrder;
+
+    private IEnumerator _spawnCoroutine;
+
     private void Awake()
     {
+        GeneratingWorld.SetActive(false);
+
         if (UseRandomSeed)
         {
             Seed = (int)System.DateTime.Now.Ticks;
@@ -82,6 +99,7 @@ public class MapGen : MonoBehaviour
 
         _allTiles = new List<GameObject>();
         _objects = new List<GameObject>();
+        _tileOrder = new List<(int, int)>();
 
         InitializeArrays();
 
@@ -97,6 +115,12 @@ public class MapGen : MonoBehaviour
         ResidentialSlider.onValueChanged.AddListener(delegate { SetWeight(ResidentialSlider, ResidentialWeightText, ref ResidentialWeight); });
         CommercialSlider.onValueChanged.AddListener(delegate { SetWeight(CommercialSlider, CommercialWeightText, ref CommericalWeight); });
         GrassSlider.onValueChanged.AddListener(delegate { SetWeight(GrassSlider, GrassWeightText, ref GrassWeight); });
+
+        Animation_Toggle.onValueChanged.AddListener((value) => { Animate = value; });
+        Animation_Delay_Input.onValueChanged.AddListener((value) => { TileDelay = float.Parse(value); });
+
+        Animation_Toggle.isOn = Animate;
+        Animation_Delay_Input.text = TileDelay.ToString();
     }
 
     private void InitializeArrays()
@@ -125,7 +149,11 @@ public class MapGen : MonoBehaviour
     {
         if (Input.GetKeyUp(KeyCode.Return))
         {
+            // Stop any running Coroutines
+            StopAllCoroutines();
+
             //Generate New Map
+            StartCoroutine(ShowGeneratingNotification());
             GenerateMap();
 
             //_map[0, 0] = InputTiles[0];
@@ -140,8 +168,34 @@ public class MapGen : MonoBehaviour
 
         if (Input.GetKeyUp(KeyCode.N))
         {
+
             ResolveNextTile();
             DrawMap();
+        }
+
+        if (Input.GetKeyUp(KeyCode.Tab))
+        {
+            ToggleUI();
+        }
+    }
+
+    private IEnumerator ShowGeneratingNotification()
+    {
+        GeneratingWorld.SetActive(true);
+        yield return null;
+    }
+
+    private void ToggleUI()
+    {
+        if (HideUI)
+        {
+            UI.SetActive(true);
+            HideUI = false;
+        }
+        else
+        {
+            UI.SetActive(false);
+            HideUI= true;
         }
     }
 
@@ -172,6 +226,8 @@ public class MapGen : MonoBehaviour
 
     private void GenerateMap()
     {
+        
+
         Reset();
 
         //Populate States
@@ -240,6 +296,7 @@ public class MapGen : MonoBehaviour
         GameObject currentTile = _mapList[startingRow, startingCol][Random.Range(0, _mapList[startingRow, startingCol].Count)];
         _map[startingRow, startingCol] = currentTile;
         _mapList[startingRow, startingCol].Clear();
+        _tileOrder.Add((startingRow, startingCol));
 
         PropagateWave(startingRow, startingCol, currentTile);
 
@@ -316,6 +373,8 @@ public class MapGen : MonoBehaviour
             }
         }
 
+        GeneratingWorld.SetActive(false);
+
     }
 
     private void ResolveNextTile()
@@ -346,6 +405,7 @@ public class MapGen : MonoBehaviour
         GameObject currentTile = _mapList[nextRow, nextCol][Random.Range(0, _mapList[nextRow, nextCol].Count)];
         _map[nextRow, nextCol] = currentTile;
         _mapList[nextRow, nextCol].Clear();
+        _tileOrder.Add((nextRow, nextCol));
 
         PropagateWave(nextRow, nextCol, currentTile);
     }
@@ -423,19 +483,60 @@ public class MapGen : MonoBehaviour
         }
         _objects.Clear();
 
-        int xpos = 0;
-        int zpos = 0;
-        for (int r = 0; r < Rows; r++)
+        if (Animate)
         {
-            for (int c = 0; c < Cols; c++)
+            _spawnCoroutine = SpawnTiles();
+            StartCoroutine(_spawnCoroutine);
+        }
+        else
+        {
+            for (int r = 0; r < Rows; r++)
             {
-                if (_map[r, c] == null) continue;
-                xpos += BlockSize;
-                Debug.Log("Instantiate Tile");
-                GameObject o =Instantiate(_map[r,c], new Vector3(c * BlockSize, 0, r * BlockSize), Quaternion.identity);
-                _objects.Add(o);
+                for (int c = 0; c < Cols; c++)
+                {
+                    if (_map[r, c] == null) continue;
+
+                    Debug.Log("Instantiate Tile");
+                    GameObject o = Instantiate(_map[r, c], new Vector3(c * BlockSize, 0, r * BlockSize), Quaternion.identity);
+                    _objects.Add(o);
+                }
             }
         }
+
+
+
+    }
+
+    public IEnumerator SpawnTiles()
+    {
+       
+        //for (int r = 0; r < Rows; r++)
+        //{
+        //    for (int c = 0; c < Cols; c++)
+        //    {
+        //        if (_map[r, c] == null) continue;
+          
+        //        Debug.Log("Instantiate Tile");
+        //        GameObject o = Instantiate(_map[r, c], new Vector3(c * BlockSize, 0, r * BlockSize), Quaternion.identity);
+        //        _objects.Add(o);
+        //        yield return new WaitForSeconds(TileDelay);
+        //    }
+        //}
+
+        foreach ((int, int) point in _tileOrder)
+        {
+            int r = point.Item1;
+            int c = point.Item2;
+
+            if (r >= _map.GetLength(0) || c >= _map.GetLength(1)) yield break;
+
+            if (_map[r, c] == null) continue;
+
+            GameObject o = Instantiate(_map[r, c], new Vector3(c * BlockSize, 0, r * BlockSize), Quaternion.identity);
+            _objects.Add(o);
+            yield return new WaitForSeconds(TileDelay);
+        }
+
     }
 
 
