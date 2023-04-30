@@ -67,7 +67,7 @@ public class MapGen : MonoBehaviour
 
     private List<GameObject> _allTiles;
 
-    [SerializeField] public List<GameObject>[,] _mapList;
+    [SerializeField] public TileContainer[,] _mapList;
     public GameObject[,] _map;
     private List<GameObject> _objects;
     private int _totalResolved;
@@ -101,14 +101,15 @@ public class MapGen : MonoBehaviour
 
     private void InitializeArrays()
     {
-        _mapList = new List<GameObject>[Rows, Cols];
+        _mapList = new TileContainer[Rows, Cols];
         _map = new GameObject[Rows, Cols];
 
         for (int r = 0; r < Rows; r++)
         {
             for (int c = 0; c < Cols; c++)
             {
-                _mapList[r, c] = new List<GameObject>();
+                _mapList[r, c] = new TileContainer();
+                _mapList[r, c].CreateLists();
             }
         }
     }
@@ -127,14 +128,6 @@ public class MapGen : MonoBehaviour
         {
             //Generate New Map
             GenerateMap();
-
-            //_map[0, 0] = InputTiles[0];
-            //_map[0, 1] = InputTiles[1];
-
-            //_map[2, 1] = InputTiles[0];
-            //_map[2, 2] = InputTiles[1];
-
-
             DrawMap();
         }
 
@@ -157,7 +150,7 @@ public class MapGen : MonoBehaviour
         {
             for (int j = 0; j < _mapList.GetLength(1); j++)
             {
-                _mapList[i, j].Clear();
+                _mapList[i, j].Reset();
                 _map[i, j] = null;
             }
         }
@@ -182,54 +175,42 @@ public class MapGen : MonoBehaviour
             {
                 if (Grass)
                 {
-                    for (int i = 0; i < GrassWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(GrassTiles);
-                    }
+                    _mapList[r, c].GrassTiles.AddRange(GrassTiles);
                 }
                 if (Roads)
                 {
-                    for (int i = 0; i < RoadWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(RoadTiles);
-                    }
+                    _mapList[r, c].RoadTiles.AddRange(RoadTiles);
                 }
                 if (Water)
                 {
-                    for (int i = 0; i < WaterWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(WaterTiles);
-                    }
+                    _mapList[r, c].WaterTiles.AddRange(WaterTiles);
                 }
                 if (Dirt)
                 {
-                    for (int i = 0; i < DirtWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(DirtTiles);
-                    }
+                    _mapList[r, c].DirtTiles.AddRange(DirtTiles);
                 }
                 if (Residential)
                 {
-                    for(int i = 0; i < ResidentialWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(ResidentialTiles);
-                    }
+                    _mapList[r, c].ResidentialTiles.AddRange(ResidentialTiles);
                 }
                 if (Commercial)
                 {
-                    for (int i = 0; i < CommericalWeight; i++)
-                    {
-                        _mapList[r, c].AddRange(CommercialTiles);
-                    }
+                    _mapList[r, c].CommercialTiles.AddRange(CommercialTiles);
                 }
 
                 if (Water && Roads)
                 {
-                    for (int i = 0; i < (RoadWeight + WaterWeight) / 2; i++)
-                    {
-                        _mapList[r, c].AddRange(RoadAndWaterTiles);
-                    }
+                    _mapList[r, c].RoadAndWaterTiles.AddRange(RoadAndWaterTiles);
                 }
+
+                _mapList[r, c].RoadWeight = RoadWeight;
+                _mapList[r, c].WaterWeight = WaterWeight;
+                _mapList[r, c].DirtWeight = DirtWeight;
+                _mapList[r, c].GrassWeight = GrassWeight;
+                _mapList[r, c].ResidentialWeight = ResidentialWeight;
+                _mapList[r, c].CommercialWeight = CommericalWeight;
+
+                _mapList[r, c].GenerateWeights();
             }
         }
 
@@ -237,84 +218,84 @@ public class MapGen : MonoBehaviour
         int startingRow = Random.Range(0, Rows);
         int startingCol = Random.Range(0, Cols);
 
-        GameObject currentTile = _mapList[startingRow, startingCol][Random.Range(0, _mapList[startingRow, startingCol].Count)];
+        GameObject currentTile = _mapList[startingRow, startingCol].RandomTile();
         _map[startingRow, startingCol] = currentTile;
-        _mapList[startingRow, startingCol].Clear();
+        _mapList[startingRow, startingCol].Reset();
 
         PropagateWave(startingRow, startingCol, currentTile);
 
-        for (int i = 0; i < Rows * Cols - 1; i++)
-        {
-            ResolveNextTile();
-        }
+        //for (int i = 0; i < Rows * Cols - 1; i++)
+        //{
+        //    ResolveNextTile();
+        //}
 
-        //Spot fill
-        for(int r = 0; r < Rows; r++)
-        {
-            for(int c = 0; c < Cols; c++)
-            {
-                if (_map[r,c] == null)
-                {
-                    List<GameObject> availableTiles = new List<GameObject>();
-                    List<GameObject> validTiles = new List<GameObject>();
+        ////Spot fill
+        //for(int r = 0; r < Rows; r++)
+        //{
+        //    for(int c = 0; c < Cols; c++)
+        //    {
+        //        if (_map[r,c] == null)
+        //        {
+        //            List<GameObject> availableTiles = new List<GameObject>();
+        //            List<GameObject> validTiles = new List<GameObject>();
 
-                    availableTiles.AddRange(SecondPassTiles);
+        //            availableTiles.AddRange(SecondPassTiles);
 
-                    foreach (GameObject tile in availableTiles)
-                    {
-                        Tile.Type topType = Tile.Type.Void;
-                        Tile.Type bottomType = Tile.Type.Void;
-                        Tile.Type leftType = Tile.Type.Void;
-                        Tile.Type rightType = Tile.Type.Void;
+        //            foreach (GameObject tile in availableTiles)
+        //            {
+        //                Tile.Type topType = Tile.Type.Void;
+        //                Tile.Type bottomType = Tile.Type.Void;
+        //                Tile.Type leftType = Tile.Type.Void;
+        //                Tile.Type rightType = Tile.Type.Void;
 
-                        //Check Below
-                        if (r > 0 && _map[r - 1, c] != null)
-                        {
-                            bottomType = _map[r - 1,c].GetComponent<Tile>().ZPositiveConnection;
-                        }
+        //                //Check Below
+        //                if (r > 0 && _map[r - 1, c] != null)
+        //                {
+        //                    bottomType = _map[r - 1,c].GetComponent<Tile>().ZPositiveConnection;
+        //                }
 
-                        //Check Above
-                        if (r < Rows - 1 && _map[r + 1, c] != null)
-                        {
-                            topType = _map[r + 1, c].GetComponent<Tile>().ZNegativeConnection;
-                        }
+        //                //Check Above
+        //                if (r < Rows - 1 && _map[r + 1, c] != null)
+        //                {
+        //                    topType = _map[r + 1, c].GetComponent<Tile>().ZNegativeConnection;
+        //                }
 
-                        //Check Left
-                        if (c > 0 && _map[r, c - 1] != null)
-                        {
-                            leftType = _map[r, c - 1].GetComponent<Tile>().XPositiveConnection;
-                        }
+        //                //Check Left
+        //                if (c > 0 && _map[r, c - 1] != null)
+        //                {
+        //                    leftType = _map[r, c - 1].GetComponent<Tile>().XPositiveConnection;
+        //                }
 
-                        //Check Right
-                        if (c < Cols - 1 && _map[r, c + 1] != null)
-                        {
-                            rightType = _map[r, c + 1].GetComponent<Tile>().XNegativeConnection;
-                        }
+        //                //Check Right
+        //                if (c < Cols - 1 && _map[r, c + 1] != null)
+        //                {
+        //                    rightType = _map[r, c + 1].GetComponent<Tile>().XNegativeConnection;
+        //                }
 
-                        if ((bottomType == Tile.Type.Void || bottomType == tile.GetComponent<Tile>().ZNegativeConnection)
-                            && (topType == Tile.Type.Void || topType == tile.GetComponent<Tile>().ZPositiveConnection)
-                            && (leftType == Tile.Type.Void || leftType == tile.GetComponent<Tile>().XNegativeConnection)
-                            && (rightType == Tile.Type.Void || rightType == tile.GetComponent<Tile>().XPositiveConnection))
-                        {
-                            validTiles.Add(tile);
-                        }
+        //                if ((bottomType == Tile.Type.Void || bottomType == tile.GetComponent<Tile>().ZNegativeConnection)
+        //                    && (topType == Tile.Type.Void || topType == tile.GetComponent<Tile>().ZPositiveConnection)
+        //                    && (leftType == Tile.Type.Void || leftType == tile.GetComponent<Tile>().XNegativeConnection)
+        //                    && (rightType == Tile.Type.Void || rightType == tile.GetComponent<Tile>().XPositiveConnection))
+        //                {
+        //                    validTiles.Add(tile);
+        //                }
                         
-                    }
+        //            }
 
-                    if (validTiles.Count > 0)
-                    {
-                        GameObject selectedTile = validTiles[Random.Range(0, validTiles.Count)];
-                        _map[r, c] = selectedTile;
-                    }
-                    else
-                    {
-                        _map[r, c] = NullTile;
-                    }
+        //            if (validTiles.Count > 0)
+        //            {
+        //                GameObject selectedTile = validTiles[Random.Range(0, validTiles.Count)];
+        //                _map[r, c] = selectedTile;
+        //            }
+        //            else
+        //            {
+        //                _map[r, c] = NullTile;
+        //            }
 
                     
-                }
-            }
-        }
+        //        }
+        //    }
+        //}
 
     }
 
@@ -322,30 +303,30 @@ public class MapGen : MonoBehaviour
     {
         int nextRow = 0;
         int nextCol = 0;
-        int totalStates = int.MaxValue;
+        float totalEntropy = float.MaxValue;
 
         for(int r = 0; r < Rows; r++)
         {
             for(int c = 0; c < Cols; c++)
             {
-                int states = _mapList[r, c].Count;
+                int entropy = _mapList[r, c].Entropy();
 
-                if (states <= 0) continue;
+                if (entropy <= 0) continue;
 
-                if (states < totalStates)
+                if (entropy < totalEntropy)
                 {
-                    totalStates = states;
+                    totalEntropy = entropy;
                     nextRow = r;
                     nextCol = c;
                 }
             }
         }
 
-        if (totalStates == int.MaxValue) { return; }
+        if (totalEntropy == int.MaxValue) { return; }
 
-        GameObject currentTile = _mapList[nextRow, nextCol][Random.Range(0, _mapList[nextRow, nextCol].Count)];
+        GameObject currentTile = _mapList[nextRow, nextCol].RandomTile();
         _map[nextRow, nextCol] = currentTile;
-        _mapList[nextRow, nextCol].Clear();
+        _mapList[nextRow, nextCol].Reset();
 
         PropagateWave(nextRow, nextCol, currentTile);
     }
@@ -355,62 +336,66 @@ public class MapGen : MonoBehaviour
         // Check Below
         if (r > 0)
         {
-            List<GameObject> validTiles = new List<GameObject>();
-            List<GameObject> availableTiles = _mapList[r - 1, c];
-            foreach (GameObject tile in availableTiles)
-            {
-                if (tile.GetComponent<Tile>().ZPositiveConnection == currentTile.GetComponent<Tile>().ZNegativeConnection)
-                {
-                    validTiles.Add(tile);
-                }
-            }
-            _mapList[r - 1, c] = validTiles;
+            _mapList[r - 1, c].RemoveInvalidTiles("bottom", currentTile.GetComponent<Tile>().ZNegativeConnection);
+            //List<GameObject> validTiles = new List<GameObject>();
+            //List<GameObject> availableTiles = _mapList[r - 1, c];
+            //foreach (GameObject tile in availableTiles)
+            //{
+            //    if (tile.GetComponent<Tile>().ZPositiveConnection == currentTile.GetComponent<Tile>().ZNegativeConnection)
+            //    {
+            //        validTiles.Add(tile);
+            //    }
+            //}
+            //_mapList[r - 1, c] = validTiles;
         }
 
         // Check Above
         if (r < Rows - 1)
         {
-            List<GameObject> validTiles = new List<GameObject>();
-            List<GameObject> availableTiles = _mapList[r + 1, c];
-            foreach (GameObject tile in availableTiles)
-            {
-                if (tile.GetComponent<Tile>().ZNegativeConnection == currentTile.GetComponent<Tile>().ZPositiveConnection)
-                {
-                    validTiles.Add(tile);
-                }
-            }
-            _mapList[r + 1, c] = validTiles;
+            _mapList[r + 1, c].RemoveInvalidTiles("top", currentTile.GetComponent<Tile>().ZPositiveConnection);
+            //List<GameObject> validTiles = new List<GameObject>();
+            //List<GameObject> availableTiles = _mapList[r + 1, c];
+            //foreach (GameObject tile in availableTiles)
+            //{
+            //    if (tile.GetComponent<Tile>().ZNegativeConnection == currentTile.GetComponent<Tile>().ZPositiveConnection)
+            //    {
+            //        validTiles.Add(tile);
+            //    }
+            //}
+            //_mapList[r + 1, c] = validTiles;
         }
 
         // Check Left
         if (c > 0)
         {
-            List<GameObject> validTiles = new List<GameObject>();
-            List<GameObject> availableTiles = _mapList[r, c - 1];
-            foreach (GameObject tile in availableTiles)
-            {
-                if (tile.GetComponent<Tile>().XPositiveConnection == currentTile.GetComponent<Tile>().XNegativeConnection)
-                {
-                    Debug.Log("Tile " + tile.GetComponent<Tile>().XPositiveConnection + " == " + currentTile.GetComponent<Tile>().XNegativeConnection);
-                    validTiles.Add(tile);
-                }
-            }
-            _mapList[r, c - 1] = validTiles;
+            _mapList[r, c - 1].RemoveInvalidTiles("left", currentTile.GetComponent<Tile>().XNegativeConnection);
+            //List<GameObject> validTiles = new List<GameObject>();
+            //List<GameObject> availableTiles = _mapList[r, c - 1];
+            //foreach (GameObject tile in availableTiles)
+            //{
+            //    if (tile.GetComponent<Tile>().XPositiveConnection == currentTile.GetComponent<Tile>().XNegativeConnection)
+            //    {
+            //        Debug.Log("Tile " + tile.GetComponent<Tile>().XPositiveConnection + " == " + currentTile.GetComponent<Tile>().XNegativeConnection);
+            //        validTiles.Add(tile);
+            //    }
+            //}
+            //_mapList[r, c - 1] = validTiles;
         }
 
         // Check Right
         if (c < Cols - 1)
         {
-            List<GameObject> validTiles = new List<GameObject>();
-            List<GameObject> availableTiles = _mapList[r, c + 1];
-            foreach (GameObject tile in availableTiles)
-            {
-                if (tile.GetComponent<Tile>().XNegativeConnection == currentTile.GetComponent<Tile>().XPositiveConnection)
-                {
-                    validTiles.Add(tile);
-                }
-            }
-            _mapList[r, c + 1] = validTiles;
+            _mapList[r, c + 1].RemoveInvalidTiles("right", currentTile.GetComponent<Tile>().ZPositiveConnection);
+            //List<GameObject> validTiles = new List<GameObject>();
+            //List<GameObject> availableTiles = _mapList[r, c + 1];
+            //foreach (GameObject tile in availableTiles)
+            //{
+            //    if (tile.GetComponent<Tile>().XNegativeConnection == currentTile.GetComponent<Tile>().XPositiveConnection)
+            //    {
+            //        validTiles.Add(tile);
+            //    }
+            //}
+            //_mapList[r, c + 1] = validTiles;
         }
     }
     
