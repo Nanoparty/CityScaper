@@ -6,7 +6,7 @@ A test project using Wave Function Collapse to procedurally generate city maps
   <img src="Screenshots/Screenshot1.png" />
 </p>
 
-## Reference
+### Reference
 
 https://github.com/mxgmn/WaveFunctionCollapse
 
