@@ -1,5 +1,7 @@
 # CityScaper
-A test project using Wave Function Collapse to procedurally generate city maps
+A test project using Wave Function Collapse to procedurally generate city maps.
+
+Download the application from my itch.io page: https://dispixel.itch.io/cityscaper
 
 <p align="center">
   <img src="Screenshots/CoverImage.png" />
