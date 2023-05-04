@@ -5,6 +5,10 @@ A test project using Wave Function Collapse to procedurally generate city maps
 
 ![Screenshot 1](Screenshots/Screenshot1.png)
 
+<p align="center">
+  <img src="Screenshots/Screenshot1.png" />
+</p>
+
 ### Credit
 
 This project uses 3D assets provided for free by [Kenny.](https://www.kenney.nl/)
