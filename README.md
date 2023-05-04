@@ -1,14 +1,14 @@
 # CityScaper
 A test project using Wave Function Collapse to procedurally generate city maps
 
-## Reference
-
-https://github.com/mxgmn/WaveFunctionCollapse
-
 <p align="center">
   <img src="Screenshots/CoverImage.png" />
   <img src="Screenshots/Screenshot1.png" />
 </p>
+
+## Reference
+
+https://github.com/mxgmn/WaveFunctionCollapse
 
 ### Credit
 
