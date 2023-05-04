@@ -1,11 +1,8 @@
 # CityScaper
 A test project using Wave Function Collapse to procedurally generate city maps
 
-![Cover Image](Screenshots/CoverImage.png)
-
-![Screenshot 1](Screenshots/Screenshot1.png)
-
 <p align="center">
+  <img src="Screenshots/CoverImage.png" />
   <img src="Screenshots/Screenshot1.png" />
 </p>
 
