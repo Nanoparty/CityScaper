@@ -1,7 +1,7 @@
 # CityScaper
 An experimental project for using Wave Function Collapse to procedurally generate city maps. Made in Unity.
 
-Download the application from my itch.io page: https://dispixel.itch.io/cityscaper
+Download the application for free on Windows, Mac and Linux from: https://dispixel.itch.io/cityscaper
 
 <p align="center">
   <img src="Screenshots/CoverImage.png" />
