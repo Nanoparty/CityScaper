@@ -1,4 +1,7 @@
 # CityScaper
+
+![version](https://img.shields.io/badge/Version-1.0-green)
+
 An experimental project for using Wave Function Collapse to procedurally generate city maps. Made in Unity.
 
 ## Play Now
